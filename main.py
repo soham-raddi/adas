@@ -17,7 +17,7 @@ def process_frame(frame):
     Currently returns the frame unchanged.
     """
     # TODO: insert traffic-sign recognition or other analysis here
-    return frame
+    return frame 
 
 # ----------------------------------------
 # Argument Parsing
