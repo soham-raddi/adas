@@ -1,36 +1,41 @@
 import cv2
-import numpy as np
+import lane_detection
 
-# --- Main Execution: Video Playback ---
+if __name__ == '__main__':
+    video_filename = r"C:\Users\Soham\Downloads\adas_sample_video.mp4" 
 
-# To make this project portable, the video file should be in the same
-# directory as the Python script.
-# If your video is named something else, change the filename here.
-video_filename = 'C:\\Users\\Soham\\Downloads\\adas_sample_video.mp4'
+    print(f"Attempting to open video: {video_filename}")
+    cap = cv2.VideoCapture(video_filename)
+    
+    left_line = lane_detection.Line()
+    right_line = lane_detection.Line()
 
-print(f"Attempting to open video: {video_filename}")
-cap = cv2.VideoCapture(video_filename)
+    if not cap.isOpened():
+        print(f"FATAL ERROR: Could not open video file '{video_filename}'")
+    else:
+        print("Video opened successfully. Starting lane detection...")
+        while True:
+            ret, frame = cap.read()
+            
+            if not ret:
+                print("Info: End of video file. Exiting.")
+                break
+            
+            try:
+                processed_frame = lane_detection.process_frame(frame, left_line, right_line)
+                
+                # final result
+                cv2.imshow("Lane Detection Feed", processed_frame)
 
-# Check if the video was opened successfully
-if not cap.isOpened():
-    print(f"FATAL ERROR: Could not open video file '{video_filename}'")
-    print("Please make sure the video file is in the same folder as this script.")
-else:
-    print("Video opened successfully. Starting playback...")
-    while True:
-        ret, frame = cap.read()
-        
-        if not ret:
-            print("Info: End of video file. Exiting.")
-            break
-        
-        cv2.imshow("Video Feed", frame)
-        
-        if cv2.waitKey(25) & 0xFF == ord('q'): # Adjusted waitKey for more natural playback speed
-            print("'q' pressed, exiting playback.")
-            break
+            except Exception as e:
+                print(f"Error processing frame: {e}")
+                cv2.imshow("Lane Detection Feed", frame)
+            
+            # exits program if 'q' is prrssed
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                print("'q' pressed, exiting playback.")
+                break
 
-# --- Cleanup ---
-print("Exiting program and cleaning up.")
-cap.release()
-cv2.destroyAllWindows()
+    print("Exiting program and cleaning up.")
+    cap.release()
+    cv2.destroyAllWindows()
