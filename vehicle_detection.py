@@ -1,52 +1,60 @@
+import os
 import cv2
+from ultralytics import YOLO
 
-# --- Global Variables & Setup ---
-# Load the pre-trained vehicle classifier from OpenCV.
-# This XML file should be in the same directory as your scripts.
-try:
-    car_cascade = cv2.CascadeClassifier('haarcascade_car.xml')
-    if car_cascade.empty():
-        # This error will be printed if the file is missing or corrupted.
-        raise IOError("Could not load haarcascade_car.xml. Make sure the file is in your project directory.")
-except Exception as e:
-    print(f"Error: {e}")
-    car_cascade = None
+# --- FIX: Set a local cache directory to avoid permission errors ---
+# This forces the ultralytics library to use a folder inside your project
+# directory for its settings and models, bypassing any permission issues
+# in the default C:\Users\Soham\AppData\Roaming directory.
+cache_dir = os.path.join(os.getcwd(), 'ultralytics_cache')
+os.makedirs(cache_dir, exist_ok=True) # Create the folder if it doesn't exist
+os.environ['ULTRALYTICS_HOME'] = cache_dir
 
-def detect_vehicles(frame):
+class VehicleDetector:
     """
-    Detects vehicles in a frame, draws bounding boxes, and adds a collision warning.
-    
-    Args:
-        frame: The input video frame.
+    A class to encapsulate the YOLOv8 vehicle detection logic.
+    """
+    def __init__(self, model_path='yolov8n.pt'):
+        """
+        Initializes the VehicleDetector with a pre-trained YOLOv8 model.
+        """
+        try:
+            # Load the pre-trained YOLOv8n model.
+            # Make sure 'yolov8n.pt' is in your project folder.
+            self.model = YOLO(model_path)
+            self.class_names = self.model.names
+            self.vehicle_classes = ['car', 'truck', 'bus', 'motorbike']
+            print("YOLOv8 model loaded successfully.")
+        except Exception as e:
+            print(f"Error loading YOLO model: {e}")
+            print(f"Please ensure the model file '{model_path}' is in the same folder as this script.")
+            self.model = None
+
+    def detect_vehicles(self, frame):
+        """
+        Takes a single video frame and returns it with detected vehicles boxed.
+        """
+        if self.model is None:
+            cv2.putText(frame, "Error: YOLO Model Not Loaded", (10, 30), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            return frame
+
+        # Pass the frame to the model for inference
+        results = self.model(frame)
+
+        # Process the results
+        for result in results:
+            for box in result.boxes:
+                class_id = int(box.cls[0])
+                class_name = self.class_names[class_id]
+
+                if class_name in self.vehicle_classes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    confidence = float(box.conf[0])
+                    
+                    # Draw the bounding box and label on the frame
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    label = f"{class_name}: {confidence:.2f}"
+                    cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         
-    Returns:
-        The frame with vehicle detections and warnings drawn on it.
-    """
-    if car_cascade is None:
-        # If the classifier failed to load, display an error on the frame and return it.
-        cv2.putText(frame, "Error: Vehicle Classifier Not Loaded", (10, 30), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
         return frame
-        
-    # Create a copy to draw on, leaving the original frame clean.
-    output_frame = frame.copy()
-    gray = cv2.cvtColor(output_frame, cv2.COLOR_BGR2GRAY)
-    
-    # Detect cars using the cascade classifier.
-    # The parameters (1.1, 4) can be tuned for sensitivity and performance.
-    # 1.1 is the scaleFactor, 4 is minNeighbors.
-    cars = car_cascade.detectMultiScale(gray, 1.1, 4)
-    
-    # Draw rectangles and check for collision warning
-    for (x, y, w, h) in cars:
-        # Draw a blue rectangle around the detected vehicle
-        cv2.rectangle(output_frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
-        
-        # --- Forward Collision Warning (FCW) Logic ---
-        # If the bottom of the vehicle's bounding box is in the lower
-        # quarter of the screen, it's considered "close".
-        if y + h > output_frame.shape[0] * 0.75:
-            cv2.putText(output_frame, "WARNING: VEHICLE AHEAD", (50, 50), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-                        
-    return output_frame
