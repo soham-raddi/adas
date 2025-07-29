@@ -2,25 +2,16 @@ import os
 import cv2
 from ultralytics import YOLO
 
-# --- FIX: Set a local cache directory to avoid permission errors ---
-# This forces the ultralytics library to use a folder inside your project
-# directory for its settings and models, bypassing any permission issues
-# in the default C:\Users\Soham\AppData\Roaming directory.
 cache_dir = os.path.join(os.getcwd(), 'ultralytics_cache')
-os.makedirs(cache_dir, exist_ok=True) # Create the folder if it doesn't exist
+os.makedirs(cache_dir, exist_ok=True) 
 os.environ['ULTRALYTICS_HOME'] = cache_dir
 
 class VehicleDetector:
-    """
-    A class to encapsulate the YOLOv8 vehicle detection logic.
-    """
+    
     def __init__(self, model_path='yolov8n.pt'):
-        """
-        Initializes the VehicleDetector with a pre-trained YOLOv8 model.
-        """
+       
         try:
-            # Load the pre-trained YOLOv8n model.
-            # Make sure 'yolov8n.pt' is in your project folder.
+           
             self.model = YOLO(model_path)
             self.class_names = self.model.names
             self.vehicle_classes = ['car', 'truck', 'bus', 'motorbike']
@@ -31,18 +22,14 @@ class VehicleDetector:
             self.model = None
 
     def detect_vehicles(self, frame):
-        """
-        Takes a single video frame and returns it with detected vehicles boxed.
-        """
         if self.model is None:
             cv2.putText(frame, "Error: YOLO Model Not Loaded", (10, 30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
             return frame
 
-        # Pass the frame to the model for inference
         results = self.model(frame)
 
-        # Process the results
+        #processing the resutlt
         for result in results:
             for box in result.boxes:
                 class_id = int(box.cls[0])
@@ -52,7 +39,7 @@ class VehicleDetector:
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
                     confidence = float(box.conf[0])
                     
-                    # Draw the bounding box and label on the frame
+                    #for bounding box and labels
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     label = f"{class_name}: {confidence:.2f}"
                     cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
