@@ -7,11 +7,8 @@ os.makedirs(cache_dir, exist_ok=True)
 os.environ['ULTRALYTICS_HOME'] = cache_dir
 
 class VehicleDetector:
-    
     def __init__(self, model_path='yolov8n.pt'):
-       
         try:
-           
             self.model = YOLO(model_path)
             self.class_names = self.model.names
             self.vehicle_classes = ['car', 'truck', 'bus', 'motorbike','traffic light']
@@ -26,7 +23,6 @@ class VehicleDetector:
             cv2.putText(frame, "Error: YOLO Model Not Loaded", (10, 30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
             return frame
-
         results = self.model(frame)
 
         #processing the resutlt
@@ -43,5 +39,4 @@ class VehicleDetector:
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     label = f"{class_name}: {confidence:.2f}"
                     cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        
         return frame
