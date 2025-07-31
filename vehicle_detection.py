@@ -14,7 +14,7 @@ class VehicleDetector:
            
             self.model = YOLO(model_path)
             self.class_names = self.model.names
-            self.vehicle_classes = ['car', 'truck', 'bus', 'motorbike']
+            self.vehicle_classes = ['car', 'truck', 'bus', 'motorbike','traffic light']
             print("YOLOv8 model loaded successfully.")
         except Exception as e:
             print(f"Error loading YOLO model: {e}")
