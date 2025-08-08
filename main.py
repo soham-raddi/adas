@@ -1,7 +1,7 @@
 import cv2
 import lane_detection #script for lane detection
 import vehicle_detection #script for vehicle identification and detection
-#import sign_detection #script for sign detection
+import sign_detection #script for sign detection
 # main video processing
 if __name__ == '__main__':
     video_filename = "C:\\Users\\Soham\\Downloads\\adas_sample_video2.mp4"
