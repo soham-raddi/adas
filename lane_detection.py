@@ -38,19 +38,15 @@ def process_frame(frame):
     
     #masking canny edges
     masked_edges = _apply_region_of_interest_mask(canny_edges, roi_vertices)
-
     rho = 1
     theta = np.pi/180
     threshold = 15
     min_line_length = 40
     max_line_gap = 20
-    
     lines = cv2.HoughLinesP(masked_edges, rho, theta, threshold, np.array([]),
                             min_line_length, max_line_gap)
-
     line_image = _draw_hough_lines(frame, lines)
-    
+
     #combining line with orignal feed
     final_image = cv2.addWeighted(frame, 0.8, line_image, 1, 0)
-
     return final_image
