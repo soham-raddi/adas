@@ -8,7 +8,7 @@ import sign_detection
 
 # main video processing function
 if __name__ == '__main__':
-    video_filename = "C:\\Users\\Soham\\Downloads\\adas_sample_video.mp4"
+    video_filename = './adas/sample videos/adas_sample_video1.mp4'
     cap = cv2.VideoCapture(video_filename)
 
     # initialising the detectors
