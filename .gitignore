@@ -1,0 +1,22 @@
+Python Bytecode and Caches
+pycache/
+*.pyc
+
+Virtual Environments
+Replace 'adas/' with the name of your venv folder if it's different
+adas/
+.venv/
+
+Downloaded Model Files (optional, but good practice for large files)
+*.pt
+*.pth
+*.mp4
+
+IDE and OS-specific files
+.vscode/
+.idea/
+.DS_Store
+
+traffic_sign_dataset/
+runs/
+output/
